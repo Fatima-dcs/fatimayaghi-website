@@ -1,14 +1,14 @@
-import { dashboardRouter } from "./routers/dashboard";
-import { router } from "../trpc/init";
+import { router } from "@/server/trpc/init";
+import { profileRouter } from "./routers/profile";
+import { sessionsRouter } from "./routers/sessions";
+import { nextStepsRouter } from "./routers/next-steps";
+import { toolsRouter } from "./routers/tools";
 
-/**
- * This is the primary router for your server.
- *
- * All routers added in /api/routers should be manually added here
- */
 export const appRouter = router({
-  dashboard: dashboardRouter,
+  profile: profileRouter,
+  sessions: sessionsRouter,
+  nextSteps: nextStepsRouter,
+  tools: toolsRouter,
 });
 
-// export type definition of API
 export type AppRouter = typeof appRouter;

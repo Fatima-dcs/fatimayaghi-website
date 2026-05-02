@@ -1,5 +1,5 @@
 import { type GetServerSidePropsContext } from "next";
-import { createServerClient, serializeCookieHeader } from "@supabase/ssr";
+import { createServerClient, serializeCookieHeader, type CookieOptions } from "@supabase/ssr";
 
 export function createClient({ req, res }: GetServerSidePropsContext) {
   const supabase = createServerClient(
@@ -13,11 +13,11 @@ export function createClient({ req, res }: GetServerSidePropsContext) {
             value: req.cookies[name] || "",
           }));
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           res.setHeader(
             "Set-Cookie",
             cookiesToSet.map(({ name, value, options }) =>
-              serializeCookieHeader(name, value, options),
+              serializeCookieHeader(name, value, options ?? {}),
             ),
           );
         },

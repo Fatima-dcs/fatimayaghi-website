@@ -1,44 +1,26 @@
-/**
- * Application Configuration
- * 
- * Centralized configuration for the Social Media Monitoring application.
- * Modify these values to customize the application for your needs.
- */
-
 export const appConfig = {
-  // Basic app information
-  name: "Social Monitor",
-  description: "Monitor and track social media accounts and posts",
-  supportEmail: "support@yourdomain.com",
+  name: "Fatima Yaghi",
+  description: "Life coaching for Lebanese women ready to unlock their potential",
+  supportEmail: "fatima.ali.yaghi.1987@gmail.com",
 
-  // Branding
   brand: {
-    name: "Social Monitor",
-    shortName: "SM",
-    tagline: "Monitor social media with ease",
+    name: "Fatima Yaghi",
+    shortName: "Fatima",
+    tagline: "Unlock Your Potential | أطلقي إمكاناتك",
   },
 
-  // Authentication settings
   auth: {
     enableSignUp: true,
     enablePasswordReset: true,
   },
 
-  // Dashboard configuration
   dashboard: {
-    defaultRoute: "/dashboard/twitter",
+    defaultRoute: "/dashboard/sessions",
     showSettings: true,
     navigation: [
-      {
-        title: "Twitter Monitoring",
-        subItems: [
-          { title: "Dashboard", url: "/dashboard/twitter" },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "/dashboard/settings",
-      },
+      { title: "My Sessions", url: "/dashboard/sessions" },
+      { title: "Tools", url: "/dashboard/tools" },
+      { title: "Settings", url: "/dashboard/settings" },
     ],
   },
 } as const;

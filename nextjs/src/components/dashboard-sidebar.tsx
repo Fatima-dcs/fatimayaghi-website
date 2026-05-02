@@ -1,9 +1,4 @@
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -13,12 +8,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { appConfig } from "@/config/app";
 import { useUser } from "@/hooks/useUser";
+import { useLangStore } from "@/stores/use-lang-store";
 import { ChevronUp } from "lucide-react";
 import { useRouter } from "next/router";
 import {
@@ -32,20 +25,19 @@ const items = appConfig.dashboard.navigation;
 
 export default function DashboardSidebar() {
   const { user, signOut } = useUser();
-
   const router = useRouter();
-  const truncate = (email: string) => {
-    return email.length > 20 ? email.substring(0, 20) + "..." : email;
-  };
+  const { lang, setLang } = useLangStore();
+
+  const truncate = (email: string) =>
+    email.length > 20 ? email.substring(0, 20) + "..." : email;
 
   return (
     <Sidebar>
-      {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <p
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/")}
               className="text-foreground-muted cursor-pointer px-2 pt-2 text-2xl font-bold"
             >
               {appConfig.brand.name}
@@ -53,54 +45,35 @@ export default function DashboardSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      {/* Content */}
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  {'subItems' in item ? (
-                    <Collapsible
-                      defaultOpen
-                      className="group/collapsible w-full"
-                    >
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton className="px-4 py-3">
-                          <span>{item.title}</span>
-                          <ChevronUp className="ml-auto h-6 w-6 transition-transform group-data-[state=closed]/collapsible:rotate-180" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.subItems.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <a href={subItem.url} className="px-6 py-3">
-                                  {subItem.title}
-                                </a>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ) : 'url' in item ? (
-                    <SidebarMenuButton asChild>
-                      <a href={item.url} className="px-4 py-3">
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  ) : null}
+                  <SidebarMenuButton asChild isActive={router.pathname === item.url}>
+                    <a href={item.url} className="px-4 py-3">
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      {/* Footer */}
+
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <button
+              onClick={() => setLang(lang === "en" ? "ar" : "en")}
+              className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {lang === "en" ? "🌐 العربية" : "🌐 English"}
+            </button>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

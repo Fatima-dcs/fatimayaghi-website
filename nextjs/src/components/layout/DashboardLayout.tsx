@@ -4,8 +4,10 @@ import RootLayout from "./RootLayout";
 
 export default function DashboardLayout({
   children,
+  title: _title,
 }: {
   children: React.ReactNode;
+  title?: string;
 }) {
   return (
     <RootLayout>

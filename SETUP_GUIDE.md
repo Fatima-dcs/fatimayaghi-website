@@ -79,14 +79,7 @@ GRANT ALL ON public.site_content TO service_role;
 2. Enter the coach's email and a temporary password
 3. Copy the **User ID** (UUID) — this becomes `COACH_USER_ID` in `.env.local`
 
-### 2f. Set the coach profile role
-
-Run in SQL editor (replace the UUID with the actual coach user ID):
-```sql
-INSERT INTO public.profiles (id, role, full_name)
-VALUES ('<coach-user-id>', 'coach', 'Coach Name')
-ON CONFLICT (id) DO UPDATE SET role = 'coach';
-```
+The coach role is set **automatically** on first login — no manual SQL needed. The app detects `COACH_USER_ID` from env and upserts `role = 'coach'` in the profiles table automatically.
 
 ---
 

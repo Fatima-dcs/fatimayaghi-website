@@ -35,6 +35,10 @@ export default function CoachSessionEdit() {
   const addStep = api.nextSteps.create.useMutation({ onSuccess: () => { refetch(); setNewStep(""); } });
   const deleteStep = api.nextSteps.delete.useMutation({ onSuccess: () => refetch() });
   const toggleStep = api.nextSteps.toggleComplete.useMutation({ onSuccess: () => refetch() });
+  const linkToUser = api.sessions.linkToUser.useMutation({
+    onSuccess: () => { toast({ title: "Session linked to user" }); refetch(); },
+    onError: (e) => toast({ title: e.message, variant: "destructive" }),
+  });
 
   const [form, setForm] = useState({
     title: "", session_date: "", duration_minutes: 60,
@@ -42,6 +46,7 @@ export default function CoachSessionEdit() {
     client_id: "",
   });
   const [newStep, setNewStep] = useState("");
+  const [linkEmail, setLinkEmail] = useState("");
 
   useEffect(() => {
     if (session) {
@@ -94,8 +99,16 @@ export default function CoachSessionEdit() {
             </div>
 
             <div className="space-y-2">
-              <Label>Client ID</Label>
-              <Input value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })} placeholder="Client user ID (UUID)" />
+              <Label>Client</Label>
+              {(session as any)?.client_id ? (
+                <p className="text-sm text-stone-700 bg-stone-50 rounded-lg px-3 py-2">
+                  {(session as any).invitee_name ?? "Linked user"} · {(session as any).invitee_email ?? form.client_id}
+                </p>
+              ) : (
+                <p className="text-sm text-orange-600 bg-orange-50 rounded-lg px-3 py-2">
+                  ⚠ Unlinked — {(session as any)?.invitee_name ?? ""} {(session as any)?.invitee_email ? `(${(session as any).invitee_email})` : "no email"}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -176,6 +189,32 @@ export default function CoachSessionEdit() {
                 onClick={() => newStep.trim() && addStep.mutate({ session_id: id, description: newStep.trim() })}
               >
                 Add
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isNew && session && !(session as any).client_id && (
+          <div className="bg-orange-50 rounded-2xl border border-orange-100 p-6 space-y-4 shadow-sm">
+            <div>
+              <h2 className="font-semibold text-stone-800">Link to User Account</h2>
+              <p className="text-sm text-stone-500 mt-1">
+                Enter the client's account email to link this session to their dashboard.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={linkEmail}
+                onChange={(e) => setLinkEmail(e.target.value)}
+                placeholder={(session as any).invitee_email ?? "client@email.com"}
+                className="flex-1"
+              />
+              <Button
+                onClick={() => linkEmail.trim() && linkToUser.mutate({ session_id: id, email: linkEmail.trim() })}
+                disabled={linkToUser.isPending}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                {linkToUser.isPending ? "Linking..." : "Link"}
               </Button>
             </div>
           </div>

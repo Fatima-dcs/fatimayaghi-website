@@ -45,27 +45,37 @@ export default function CoachSessions() {
         )}
 
         <div className="space-y-3">
-          {sessions?.map((session) => (
-            <Link key={session.id} href={`/coach/sessions/${session.id}`}>
-              <div className="flex items-center justify-between bg-white rounded-xl border border-stone-100 p-4 shadow-sm hover:border-teal-200 hover:shadow-md transition-all cursor-pointer">
-                <div>
-                  <p className="font-medium text-stone-800">{session.title}</p>
-                  <p className="text-sm text-stone-400">
-                    {new Date(session.session_date).toLocaleDateString("en-GB", {
-                      weekday: "short", year: "numeric", month: "short", day: "numeric",
-                    })}
-                    {" · "}{session.duration_minutes} min
-                  </p>
+          {sessions?.map((session) => {
+            const s = session as any;
+            const isUnlinked = !s.client_id;
+            return (
+              <Link key={session.id} href={`/coach/sessions/${session.id}`}>
+                <div className="flex items-center justify-between bg-white rounded-xl border border-stone-100 p-4 shadow-sm hover:border-teal-200 hover:shadow-md transition-all cursor-pointer">
+                  <div>
+                    <p className="font-medium text-stone-800">{session.title}</p>
+                    <p className="text-sm text-stone-400">
+                      {new Date(session.session_date).toLocaleDateString("en-GB", {
+                        weekday: "short", year: "numeric", month: "short", day: "numeric",
+                      })}
+                      {" · "}{session.duration_minutes} min
+                    </p>
+                    {isUnlinked && s.invitee_email && (
+                      <p className="text-xs text-stone-400 mt-0.5">{s.invitee_name ?? ""} · {s.invitee_email}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {isUnlinked && (
+                      <span className="text-xs font-medium text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Unlinked</span>
+                    )}
+                    {!session.summary && session.status === "completed" && (
+                      <span className="text-xs text-amber-600 font-medium">⚠ No summary</span>
+                    )}
+                    <Badge className={statusColors[session.status] ?? ""}>{session.status}</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {!session.summary && session.status === "completed" && (
-                    <span className="text-xs text-amber-600 font-medium">⚠ No summary</span>
-                  )}
-                  <Badge className={statusColors[session.status] ?? ""}>{session.status}</Badge>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>

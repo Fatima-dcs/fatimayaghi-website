@@ -97,6 +97,10 @@ GRANT ALL ON public.profiles TO authenticated;
 GRANT ALL ON public.sessions TO authenticated;
 GRANT ALL ON public.next_steps TO authenticated;
 GRANT ALL ON public.tools TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
+GRANT ALL ON public.sessions TO service_role;
+GRANT ALL ON public.next_steps TO service_role;
+GRANT ALL ON public.tools TO service_role;
 
 -- profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles

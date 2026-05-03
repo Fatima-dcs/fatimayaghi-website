@@ -10,6 +10,10 @@ function App({ Component, pageProps }: AppProps) {
   const lang = useLangStore((s) => s.lang);
 
   useEffect(() => {
+    useLangStore.persist.rehydrate();
+  }, []);
+
+  useEffect(() => {
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = lang;
   }, [lang]);

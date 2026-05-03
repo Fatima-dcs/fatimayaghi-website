@@ -1,18 +1,19 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "@/server/trpc/init";
 import { TRPCError } from "@trpc/server";
+import { supabaseServer } from "@/lib/clients/supabase";
 
 export const sessionsRouter = router({
   list: protectedProcedure
     .input(z.object({ client_id: z.string().uuid().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const { data: profile } = await ctx.supabase
+      const { data: profile } = await (supabaseServer as any)
         .from("profiles")
         .select("role")
         .eq("id", ctx.user.id)
         .single();
 
-      let query = ctx.supabase
+      let query = (supabaseServer as any)
         .from("sessions")
         .select("*, next_steps(*)")
         .order("session_date", { ascending: false });
@@ -30,11 +31,22 @@ export const sessionsRouter = router({
   get: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const { data } = await ctx.supabase
+      const { data: profile } = await (supabaseServer as any)
+        .from("profiles")
+        .select("role")
+        .eq("id", ctx.user.id)
+        .single();
+
+      const query = (supabaseServer as any)
         .from("sessions")
         .select("*, next_steps(*)")
-        .eq("id", input.id)
-        .single();
+        .eq("id", input.id);
+
+      if (profile?.role !== "coach") {
+        query.eq("client_id", ctx.user.id);
+      }
+
+      const { data } = await query.single();
       return data;
     }),
 
@@ -51,14 +63,14 @@ export const sessionsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { data: profile } = await ctx.supabase
+      const { data: profile } = await (supabaseServer as any)
         .from("profiles")
         .select("role")
         .eq("id", ctx.user.id)
         .single();
       if (profile?.role !== "coach") throw new TRPCError({ code: "FORBIDDEN" });
 
-      const { data } = await ctx.supabase
+      const { data } = await (supabaseServer as any)
         .from("sessions")
         .insert({ ...input, coach_id: ctx.user.id })
         .select()
@@ -79,7 +91,7 @@ export const sessionsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { data: profile } = await ctx.supabase
+      const { data: profile } = await (supabaseServer as any)
         .from("profiles")
         .select("role")
         .eq("id", ctx.user.id)
@@ -87,10 +99,33 @@ export const sessionsRouter = router({
       if (profile?.role !== "coach") throw new TRPCError({ code: "FORBIDDEN" });
 
       const { id, ...rest } = input;
-      const { data } = await ctx.supabase
+      const { data } = await (supabaseServer as any)
         .from("sessions")
         .update(rest)
         .eq("id", id)
+        .select()
+        .single();
+      return data;
+    }),
+
+  linkToUser: protectedProcedure
+    .input(z.object({ session_id: z.string().uuid(), email: z.string().email() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data: profile } = await (supabaseServer as any)
+        .from("profiles")
+        .select("role")
+        .eq("id", ctx.user.id)
+        .single();
+      if (profile?.role !== "coach") throw new TRPCError({ code: "FORBIDDEN" });
+
+      const { data: users } = await supabaseServer.auth.admin.listUsers();
+      const matched = users?.users?.find((u) => u.email === input.email);
+      if (!matched) throw new TRPCError({ code: "NOT_FOUND", message: "No user found with that email" });
+
+      const { data } = await (supabaseServer as any)
+        .from("sessions")
+        .update({ client_id: matched.id })
+        .eq("id", input.session_id)
         .select()
         .single();
       return data;

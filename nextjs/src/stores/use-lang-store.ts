@@ -12,6 +12,6 @@ export const useLangStore = create<LangState>()(
       lang: "en",
       setLang: (lang) => set({ lang }),
     }),
-    { name: "lang-preference" }
+    { name: "lang-preference", skipHydration: true }
   )
 );

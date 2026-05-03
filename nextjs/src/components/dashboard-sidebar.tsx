@@ -4,6 +4,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -12,6 +13,7 @@ import {
 import { appConfig } from "@/config/app";
 import { useUser } from "@/hooks/useUser";
 import { useLangStore } from "@/stores/use-lang-store";
+import { api } from "@/utils/api";
 import { ChevronUp } from "lucide-react";
 import { useRouter } from "next/router";
 import {
@@ -23,10 +25,19 @@ import {
 
 const items = appConfig.dashboard.navigation;
 
+const coachItems = [
+  { title: "Overview", url: "/coach" },
+  { title: "Sessions", url: "/coach/sessions" },
+  { title: "Clients", url: "/coach/clients" },
+  { title: "Edit Content", url: "/coach/content" },
+];
+
 export default function DashboardSidebar() {
   const { user, signOut } = useUser();
   const router = useRouter();
   const { lang, setLang } = useLangStore();
+  const { data: profile } = api.profile.getMe.useQuery();
+  const isCoach = profile?.role === "coach";
 
   const truncate = (email: string) =>
     email.length > 20 ? email.substring(0, 20) + "..." : email;
@@ -47,21 +58,40 @@ export default function DashboardSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={router.pathname === item.url}>
-                    <a href={item.url} className="px-4 py-3">
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {isCoach ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Coach</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {coachItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={router.pathname === item.url}>
+                      <a href={item.url} className="px-4 py-3">
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={router.pathname === item.url}>
+                      <a href={item.url} className="px-4 py-3">
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>

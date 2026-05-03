@@ -195,4 +195,9 @@ npx supabase gen types typescript --local > shared-types/database.types.ts
 6. Update documentation when adding new features
 7. Commit changes regularly unless the user tells you otherwise
 
+## Setup Guide
+A reusable setup guide lives at `SETUP_GUIDE.md` in the project root. **Keep it up to date.**
+
+Whenever a new important step is introduced — such as a new third-party integration (e.g. Calendly, Stripe, Cloudflare), a new environment variable, a new manual DB step, a new deployment step, or a known gotcha/fix — add it to the relevant section of `SETUP_GUIDE.md` so it can be reproduced from scratch for future clients.
+
 Remember: This is a production-ready template focused on security, type safety, and maintainability.

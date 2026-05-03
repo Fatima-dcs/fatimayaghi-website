@@ -195,6 +195,35 @@ npx supabase gen types typescript --local > shared-types/database.types.ts
 6. Update documentation when adding new features
 7. Commit changes regularly unless the user tells you otherwise
 
+## Git & GitHub Workflow
+
+**Branching (GitHub Flow)**
+- `main` is always deployable — never commit directly to it
+- Create a branch for every feature, fix, or experiment
+- Name branches: `feature/calendly-webhook`, `fix/session-display`, `hotfix/auth-crash`, `docs/setup-guide`
+- Keep branches short-lived — merge within days, not weeks
+
+**When to commit**
+- One logical change per commit — small and focused
+- Commit working code only (never broken state)
+- Roughly every 15–30 min of coherent work
+- Message format: imperative mood, under 72 chars — `Add Calendly webhook handler`, `Fix service_role grants on sessions table`
+- Put the *why* in the body if the reason isn't obvious from the subject
+
+**When to create a PR (even solo)**
+- Always — before merging any branch into `main`
+- PRs serve as documentation of what changed and why
+- Good time to review your own diff with fresh eyes
+
+**Merge vs Rebase**
+- Rebase your feature branch locally to clean up commits before opening a PR
+- Merge (not rebase) into `main` — preserves history
+- Never rebase a branch that has already been pushed and shared
+
+**Hotfixes**
+- Branch from `main` → `hotfix/<name>`, fix, PR, merge back to `main`
+- Keep the change minimal — only fix the bug, nothing else
+
 ## Setup Guide
 A reusable setup guide lives at `SETUP_GUIDE.md` in the project root. **Keep it up to date.**
 

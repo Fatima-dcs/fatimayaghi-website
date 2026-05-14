@@ -4,6 +4,12 @@ import { supabaseServer } from "@/lib/clients/supabase";
 
 export const profileRouter = router({
   getMe: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.id === process.env.COACH_USER_ID) {
+      await (supabaseServer as any)
+        .from("profiles")
+        .upsert({ id: ctx.user.id, role: "coach" }, { onConflict: "id" });
+    }
+
     const { data } = await (supabaseServer as any)
       .from("profiles")
       .select("*")

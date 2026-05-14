@@ -153,14 +153,14 @@ curl -X POST https://api.calendly.com/webhook_subscriptions \
   }'
 ```
 
-For **local testing**, use the Cloudflare tunnel URL (see step 5) as `<your-domain>`.  
+For **local testing**, use `webhook.<your-domain>` (see step 5) as `<your-domain>`.  
 For **production**, use the real domain.
 
 ---
 
-## 5. Local Testing with Cloudflare Tunnel
+## 5. Local Testing with Cloudflare Named Tunnel (Permanent URL)
 
-Cloudflare Tunnel exposes your localhost to the internet so Calendly can reach it.
+A named tunnel gives a permanent URL that never changes on restart — register the webhook once and forget it.
 
 ### 5a. Install cloudflared
 
@@ -168,18 +168,35 @@ Cloudflare Tunnel exposes your localhost to the internet so Calendly can reach i
 brew install cloudflared
 ```
 
-### 5b. Start the tunnel
+### 5b. Create the named tunnel (one-time setup)
 
-Run in a separate terminal:
 ```bash
-cloudflared tunnel --url http://localhost:3000
+cloudflared tunnel login                          # opens browser, select your domain
+cloudflared tunnel create coaching-local          # creates tunnel, note the tunnel ID
+cloudflared tunnel route dns coaching-local webhook.<your-domain>
 ```
 
-It prints a URL like `https://abc123.trycloudflare.com`. Use this as `<your-domain>` in step 4d.
+Create `~/.cloudflared/config.yml`:
+```yaml
+tunnel: <tunnel-id>
+credentials-file: /Users/<you>/.cloudflared/<tunnel-id>.json
 
-> **Note:** The URL changes every time you restart cloudflared. If you restart it, re-register the webhook with the new URL (step 4d again).
+ingress:
+  - hostname: webhook.<your-domain>
+    service: http://localhost:3000
+  - service: http_status:404
+```
 
-### 5c. Start the dev server
+### 5c. Run the tunnel
+
+```bash
+cloudflared tunnel run coaching-local
+```
+
+Your permanent webhook URL is now `https://webhook.<your-domain>/api/webhooks/calendly?secret=<secret>`.  
+Register this once in step 4d — no need to update it ever again.
+
+### 5d. Start the dev server
 
 In another terminal:
 ```bash
@@ -204,20 +221,153 @@ npm run dev
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Webhook returns 500 | `service_role` missing table grants | Run `GRANT ALL ON public.<table> TO service_role;` in SQL editor |
-| Sessions page shows empty | Coach profile missing or role not set to 'coach' | Run the INSERT in step 2f |
+| Sessions page shows empty | Coach profile missing or role is not `coach` | Set `COACH_USER_ID` in env — role auto-sets on next login |
 | `profile.getMe` returns null | Same as above | Same fix |
-| Webhook not received | Tunnel URL changed after restart | Re-register webhook (step 4d) |
+| Webhook not received | Named tunnel not running | Run `cloudflared tunnel run coaching-local` |
 | Port 3000 in use | Old dev server still running | `kill <pid>` then `npm run dev` |
 | `.next` cache error | Stale build cache | `rm -rf .next && npm run dev` |
 
 ---
 
-## 8. Production Deployment
+## 8. Production Deployment (Vercel)
 
-> To be completed — covers Cloudflare Pages / Vercel deployment.
+Vercel is the recommended host — zero config for Next.js, free tier available, handles SSR and API routes natively.
 
-Key steps when going live:
-1. Deploy to your hosting provider
-2. Set all environment variables in the hosting dashboard (same as `.env.local`)
-3. Re-register the Calendly webhook using the real production URL (no tunnel needed)
-4. Confirm the Supabase project is not paused (free tier pauses after inactivity)
+### 8a. Push code to GitHub
+
+Make sure all changes are committed and pushed to `main`:
+```bash
+git push origin main
+```
+
+### 8b. Create a Vercel project
+
+1. Go to https://vercel.com → New Project
+2. Import your GitHub repo (`Fatima-dcs/fatimayaghi-website`)
+3. Set **Root Directory** to `nextjs`
+4. Framework preset: **Next.js** (auto-detected)
+5. Click Deploy — the first deploy will fail because env vars aren't set yet. That's fine.
+
+### 8c. Set environment variables in Vercel
+
+Go to your Vercel project → Settings → Environment Variables. Add all of these:
+
+| Variable | Value |
+|----------|-------|
+| `SUPABASE_SECRET_KEY` | Your Supabase service role key |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://gjjobrxsdifkolofmhqq.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anon/publishable key |
+| `COACH_USER_ID` | `5b077ca2-1913-457e-9478-4bcdd6c150a3` |
+| `CALENDLY_WEBHOOK_SECRET` | `48c8d947623636be04dfc58e1206e38ec01cbe3d0d1ed155c6452643b77af87d` |
+| `INNGEST_EVENT_KEY` | Your Inngest event key |
+| `INNGEST_SIGNING_KEY` | Your Inngest signing key |
+
+After adding all variables, trigger a redeploy: Deployments → ⋯ → Redeploy.
+
+### 8d. Add custom domain
+
+1. Vercel project → Settings → Domains
+2. Add `fatimayaghi.com` and `www.fatimayaghi.com`
+3. Vercel gives you DNS records to add in Cloudflare:
+   - Go to Cloudflare → fatimayaghi.com → DNS
+   - Add the CNAME record Vercel provides (points `@` or `www` to `cname.vercel-dns.com`)
+4. Wait a few minutes → site goes live at `https://fatimayaghi.com`
+
+### 8e. Update Calendly webhook to production URL
+
+The production webhook URL never changes — register it once:
+
+```bash
+# Delete old webhook (the one pointing to webhook.fatimayaghi.com)
+curl -X DELETE "https://api.calendly.com/webhook_subscriptions/<old-id>" \
+  -H "Authorization: Bearer <your-token>"
+
+# Create production webhook
+curl -X POST https://api.calendly.com/webhook_subscriptions \
+  -H "Authorization: Bearer <your-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://fatimayaghi.com/api/webhooks/calendly?secret=48c8d947623636be04dfc58e1206e38ec01cbe3d0d1ed155c6452643b77af87d",
+    "events": ["invitee.created", "invitee.canceled"],
+    "organization": "https://api.calendly.com/organizations/e3925c17-8bcb-459f-a6eb-4260a97b05bb",
+    "user": "https://api.calendly.com/users/fe40473c-669a-418e-b3e0-ee1a2f5c77ed",
+    "scope": "user"
+  }'
+```
+
+> After going to production, the local `webhook.fatimayaghi.com` tunnel is only needed for local development and testing — not for live traffic.
+
+### 8f. Verify production
+
+1. Visit `https://fatimayaghi.com` — landing page loads
+2. Sign in as coach → `/coach` dashboard loads
+3. Book a test session via Calendly → session appears in `/coach/sessions`
+4. Sign in as a client → `/dashboard/sessions` shows their sessions
+
+---
+
+## 9. Access Control — Enabling Specific Content per Client
+
+By default all clients see the same sessions, tools, and content. Here's how to restrict access.
+
+### 9a. Current access model
+
+| What | Who sees it |
+|------|-------------|
+| Sessions | Client sees only sessions where `client_id = their user ID` |
+| Tools | All authenticated users |
+| Content (About, Why Arabic) | Public — anyone on the landing page |
+| Coach dashboard | Only the user whose ID matches `COACH_USER_ID` |
+
+### 9b. Restrict tools to specific clients (future)
+
+Add a `tier` column to `profiles`:
+```sql
+ALTER TABLE public.profiles ADD COLUMN tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'premium'));
+```
+
+Add a `tier_required` column to `tools`:
+```sql
+ALTER TABLE public.tools ADD COLUMN tier_required TEXT NOT NULL DEFAULT 'free';
+```
+
+Update the RLS policy:
+```sql
+DROP POLICY "Authenticated users can view tools" ON public.tools;
+CREATE POLICY "Clients can view tools by tier" ON public.tools
+  FOR SELECT TO authenticated
+  USING (
+    tier_required = 'free'
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() AND p.tier = tier_required
+    )
+  );
+```
+
+To upgrade a client to premium, run in the SQL editor:
+```sql
+UPDATE public.profiles SET tier = 'premium' WHERE id = '<client-user-id>';
+```
+
+Or build a toggle in the coach's client list UI to do this without SQL.
+
+### 9c. Invite-only sign-up
+
+To prevent random sign-ups and only allow clients you invite:
+
+In `nextjs/src/config/app.ts`, set:
+```ts
+enableSignUp: false
+```
+
+Clients can only join via the coach's invite flow (`/coach/clients` → Invite Client button). Supabase sends them a magic-link email to set their password.
+
+### 9d. How the coach manages client access (summary)
+
+| Action | Where |
+|--------|-------|
+| Invite a new client | `/coach/clients` → Invite Client |
+| Link a Calendly booking to a client | `/coach/sessions/[id]` → Link to User |
+| Upgrade client to premium tier | SQL editor or future UI toggle |
+| Revoke access | Supabase Dashboard → Auth → Users → Delete user |

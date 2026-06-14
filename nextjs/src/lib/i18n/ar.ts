@@ -50,6 +50,12 @@ export const ar: Translations = {
     calendlyPlaceholder: "جارٍ تحميل التقويم...",
     whatsapp: "تواصلي عبر واتساب",
   },
+  cookieBanner: {
+    title: "نستخدم ملفات تعريف الارتباط",
+    description: "نستخدم ملفات تعريف الارتباط الأساسية لإبقاء الموقع يعمل. نودّ أيضًا استخدام ملفات تحليلية لفهم كيفية استخدامك له.",
+    acceptAll: "قبول الكل",
+    essentialOnly: "الأساسي فقط",
+  },
   testimonials: {
     eyebrow: "عملاء",
     title: "ماذا يقول العملاء.",

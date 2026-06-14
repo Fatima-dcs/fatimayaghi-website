@@ -48,6 +48,12 @@ export const en = {
     calendlyPlaceholder: "Booking calendar loading...",
     whatsapp: "Chat on WhatsApp",
   },
+  cookieBanner: {
+    title: "We use cookies",
+    description: "We use essential cookies to keep the site working. We'd also like to use analytics cookies to understand how you use it.",
+    acceptAll: "Accept all",
+    essentialOnly: "Essential only",
+  },
   testimonials: {
     eyebrow: "Clients",
     title: "What clients say.",

@@ -1,10 +1,16 @@
 import { AppProps } from "next/app";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import RootLayout from "@/components/layout/RootLayout";
 import { Toaster } from "@/components/ui/toaster";
 import { useLangStore } from "@/stores/use-lang-store";
 import "../styles/globals.css";
 import { api } from "../utils/api";
+
+const CookieBanner = dynamic(
+  () => import("@/components/CookieBanner").then((m) => m.CookieBanner),
+  { ssr: false }
+);
 
 function App({ Component, pageProps }: AppProps) {
   const lang = useLangStore((s) => s.lang);
@@ -23,6 +29,7 @@ function App({ Component, pageProps }: AppProps) {
       <div className="min-h-screen">
         <Component {...pageProps} />
         <Toaster />
+        <CookieBanner />
       </div>
     </RootLayout>
   );

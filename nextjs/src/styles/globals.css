@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Figtree:wght@400;500;600&display=swap');
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -49,6 +51,14 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     --font-alegreya: "Alegreya", serif;
+
+    /* Sand palette — landing page design system */
+    --sand-bg: #faf8f5;
+    --sand-surface: #f0ebe3;
+    --sand-muted: #c9b99a;
+    --sand-accent: #8b7355;
+    --sand-ink: #2b2622;
+    --sand-ink-soft: #5b524a;
   }
   .dark {
     --background: 0 0% 3.9%;

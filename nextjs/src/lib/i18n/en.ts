@@ -48,6 +48,48 @@ export const en = {
     calendlyPlaceholder: "Booking calendar loading...",
     whatsapp: "Chat on WhatsApp",
   },
+  testimonials: {
+    eyebrow: "Clients",
+    title: "What clients say.",
+    items: [
+      {
+        quote: "Fatima helped me see what was actually holding me back — not what I thought it was. In six sessions I had a plan I believed in.",
+        author: "R.H., Product Manager",
+      },
+      {
+        quote: "I came in overwhelmed and left with clarity. Her approach is warm, direct, and nothing like what I expected coaching to be.",
+        author: "N.K., Entrepreneur",
+      },
+    ],
+  },
+  faq: {
+    eyebrow: "FAQ",
+    title: "Questions, answered.",
+    items: [
+      {
+        q: "How long is a typical engagement?",
+        a: "Most clients work with me for 6 to 8 sessions over 3–4 months. We always start with a free discovery call to see if it's the right fit.",
+      },
+      {
+        q: "Do you coach in Arabic?",
+        a: "Yes. Sessions can be in Arabic, English, or a mix — whatever feels most natural for you.",
+      },
+      {
+        q: "What is the EQi 2.0 assessment?",
+        a: "The EQ-i 2.0 is a scientifically validated emotional intelligence assessment. I use it to help clients understand their strengths and areas for growth — it gives our coaching a concrete starting point.",
+      },
+      {
+        q: "Is this therapy?",
+        a: "No. Coaching is forward-looking and action-oriented. I'll always refer you on if therapy is a better fit.",
+      },
+    ],
+  },
+  cta: {
+    eyebrow: "Ready when you are",
+    title: "Let's see if we're a good fit.",
+    subtitle: "A free 30-minute discovery call. No pitch, no pressure.",
+    button: "Book a discovery call",
+  },
   footer: {
     tagline: "Empowering Lebanese women to unlock their potential.",
     links: { privacy: "Privacy", terms: "Terms", support: "Support" },

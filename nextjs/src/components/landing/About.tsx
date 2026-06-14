@@ -1,6 +1,15 @@
 import { useTranslation } from "@/lib/i18n";
 import { api } from "@/utils/api";
 
+const eyebrow: React.CSSProperties = {
+  fontFamily: "'Figtree', sans-serif",
+  fontWeight: 500,
+  fontSize: 12,
+  letterSpacing: "0.18em",
+  textTransform: "uppercase",
+  color: "var(--sand-accent)",
+};
+
 export function About() {
   const { t, lang } = useTranslation();
   const { data: content } = api.content.list.useQuery();
@@ -14,20 +23,34 @@ export function About() {
     : (content?.about_it?.value_en || t.about.itDesc);
 
   return (
-    <section id="about" className="py-20 px-4 sm:px-6 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-stone-800 text-center mb-12">{t.about.title}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-teal-50 rounded-2xl p-8 space-y-4">
-            <div className="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center text-white text-2xl">🌿</div>
-            <h3 className="text-xl font-bold text-teal-800">{t.about.coachTitle}</h3>
-            <p className="text-stone-600 leading-relaxed">{coachDesc}</p>
-          </div>
-          <div className="bg-stone-50 rounded-2xl p-8 space-y-4">
-            <div className="w-12 h-12 bg-stone-600 rounded-xl flex items-center justify-center text-white text-2xl">💡</div>
-            <h3 className="text-xl font-bold text-stone-800">{t.about.itTitle}</h3>
-            <p className="text-stone-600 leading-relaxed">{itDesc}</p>
-          </div>
+    <section id="about" className="mx-auto max-w-6xl px-6 py-24">
+      <div className="grid items-center gap-14 md:grid-cols-2">
+        <div
+          className="order-2 aspect-square rounded-[2rem] md:order-1 flex items-center justify-center"
+          style={{ background: "var(--sand-surface)" }}
+        >
+          <span
+            className="text-9xl font-light font-heading"
+            style={{ color: "var(--sand-muted)", letterSpacing: "-0.02em" }}
+          >
+            F
+          </span>
+        </div>
+
+        <div className="order-1 md:order-2">
+          <div style={eyebrow}>{t.about.title}</div>
+          <h2
+            className="mt-3 text-4xl font-medium leading-tight font-heading md:text-5xl"
+            style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}
+          >
+            {t.about.coachTitle}
+          </h2>
+          <p className="mt-6 leading-relaxed" style={{ color: "var(--sand-ink-soft)" }}>
+            {coachDesc}
+          </p>
+          <p className="mt-4 leading-relaxed" style={{ color: "var(--sand-ink-soft)" }}>
+            {itDesc}
+          </p>
         </div>
       </div>
     </section>

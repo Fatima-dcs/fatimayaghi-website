@@ -10,16 +10,41 @@ export function WhyArabic() {
   const paragraphs = text.split("\n\n").filter(Boolean);
 
   return (
-    <section dir="rtl" lang="ar" className="bg-amber-50 py-16 px-4 sm:px-6">
+    <section
+      dir="rtl"
+      lang="ar"
+      className="py-20 px-6"
+      style={{ background: "var(--sand-surface)" }}
+    >
       <div className="max-w-3xl mx-auto text-center space-y-6">
-        <h2 className="text-3xl font-bold text-amber-900">
+        <div
+          style={{
+            fontFamily: "'Figtree', sans-serif",
+            fontWeight: 500,
+            fontSize: 12,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--sand-accent)",
+          }}
+        >
+          القصة
+        </div>
+        <h2
+          className="text-3xl font-medium font-heading"
+          style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}
+        >
           لماذا أفعل هذا؟
         </h2>
-        <div className="w-16 h-1 bg-amber-400 mx-auto rounded-full" />
+        <div
+          className="w-16 h-0.5 mx-auto rounded-full"
+          style={{ background: "var(--sand-muted)" }}
+        />
         {paragraphs.map((para, i) => (
-          <p key={i} className="text-lg text-amber-800 leading-loose">{para}</p>
+          <p key={i} className="text-lg leading-loose" style={{ color: "var(--sand-ink-soft)" }}>
+            {para}
+          </p>
         ))}
-        <p className="text-base text-amber-700 font-medium italic">
+        <p className="text-base font-medium italic" style={{ color: "var(--sand-accent)" }}>
           — فاطمة ياغي
         </p>
       </div>

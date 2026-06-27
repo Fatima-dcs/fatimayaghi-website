@@ -5,22 +5,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-const eyebrow: React.CSSProperties = {
-  fontFamily: "'Figtree', sans-serif",
-  fontWeight: 500,
-  fontSize: 12,
-  letterSpacing: "0.18em",
-  textTransform: "uppercase",
-  color: "var(--sand-accent)",
-};
+import { eyebrowStyle } from "./styles";
 
 export function FAQ() {
   const { t } = useTranslation();
 
   return (
     <section id="faq" className="mx-auto max-w-4xl px-6 py-24">
-      <div style={eyebrow}>{t.faq.eyebrow}</div>
+      <div style={eyebrowStyle}>{t.faq.eyebrow}</div>
       <h2
         className="mt-3 text-4xl font-medium leading-tight font-heading md:text-5xl"
         style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}

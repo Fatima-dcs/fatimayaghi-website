@@ -121,6 +121,8 @@ openssl rand -hex 32
 
 Copy the output → add to `nextjs/.env.local` as `CALENDLY_WEBHOOK_SECRET`.
 
+> **Never paste real secret values into `SETUP_GUIDE.md` or any other file committed to the repository.**
+
 ### 4b. Get a Calendly Personal Access Token
 
 1. Calendly → Account → Integrations → API & Webhooks → Personal Access Tokens
@@ -255,10 +257,11 @@ Go to your Vercel project → Settings → Environment Variables. Add all of the
 | Variable | Value |
 |----------|-------|
 | `SUPABASE_SECRET_KEY` | Your Supabase service role key |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://gjjobrxsdifkolofmhqq.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://<your-project-ref>.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anon/publishable key |
-| `COACH_USER_ID` | `5b077ca2-1913-457e-9478-4bcdd6c150a3` |
-| `CALENDLY_WEBHOOK_SECRET` | `48c8d947623636be04dfc58e1206e38ec01cbe3d0d1ed155c6452643b77af87d` |
+| `COACH_USER_ID` | `<your-coach-user-id>` (UUID from step 2e) |
+| `CALENDLY_WEBHOOK_SECRET` | Run: `openssl rand -hex 32` |
+| `NEXT_PUBLIC_APP_URL` | `https://fatimayaghi.com` (your production domain) |
 | `INNGEST_EVENT_KEY` | Your Inngest event key |
 | `INNGEST_SIGNING_KEY` | Your Inngest signing key |
 
@@ -287,10 +290,10 @@ curl -X POST https://api.calendly.com/webhook_subscriptions \
   -H "Authorization: Bearer <your-token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://fatimayaghi.com/api/webhooks/calendly?secret=48c8d947623636be04dfc58e1206e38ec01cbe3d0d1ed155c6452643b77af87d",
+    "url": "https://fatimayaghi.com/api/webhooks/calendly?secret=<your-calendly-webhook-secret>",
     "events": ["invitee.created", "invitee.canceled"],
-    "organization": "https://api.calendly.com/organizations/e3925c17-8bcb-459f-a6eb-4260a97b05bb",
-    "user": "https://api.calendly.com/users/fe40473c-669a-418e-b3e0-ee1a2f5c77ed",
+    "organization": "<your-calendly-org-uri>",
+    "user": "<your-calendly-user-uri>",
     "scope": "user"
   }'
 ```

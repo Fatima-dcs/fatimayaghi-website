@@ -1,13 +1,5 @@
 import { useTranslation } from "@/lib/i18n";
-
-const eyebrow: React.CSSProperties = {
-  fontFamily: "'Figtree', sans-serif",
-  fontWeight: 500,
-  fontSize: 12,
-  letterSpacing: "0.18em",
-  textTransform: "uppercase",
-  color: "var(--sand-accent)",
-};
+import { eyebrowStyle } from "./styles";
 
 export function HowItWorks() {
   const { t, lang } = useTranslation();
@@ -25,7 +17,7 @@ export function HowItWorks() {
 
   return (
     <section id="process" className="mx-auto max-w-6xl px-6 py-24">
-      <div style={eyebrow}>{t.howItWorks.title}</div>
+      <div style={eyebrowStyle}>{t.howItWorks.title}</div>
       <h2
         className="mt-3 max-w-2xl text-4xl font-medium leading-tight font-heading md:text-5xl"
         style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}

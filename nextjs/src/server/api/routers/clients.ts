@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, coachProcedure } from "@/server/trpc/init";
 import { supabaseServer } from "@/lib/clients/supabase";
 
@@ -47,14 +48,6 @@ export const clientsRouter = router({
   invite: coachProcedure
     .input(z.object({ email: z.string().email(), full_name: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      // Upsert a prospect profile for the email if one doesn't exist yet
-      const { data: existingAuth } = await (supabaseServer as any)
-        .from("profiles")
-        .select("id")
-        .eq("id", ctx.user.id) // just a dummy check — we rely on email match below
-        .limit(0);
-
-      // Create the invitation row
       const { data: invite, error } = await (supabaseServer as any)
         .from("client_invitations")
         .insert({
@@ -99,6 +92,36 @@ export const clientsRouter = router({
         .eq("token", input.token)
         .is("accepted_at", null);
       return { ok: true };
+    }),
+
+  registerWithInvite: publicProcedure
+    .input(z.object({
+      token: z.string(),
+      email: z.string().email(),
+      password: z.string().min(8),
+      full_name: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { data: invite, error } = await (supabaseServer as any)
+        .from("client_invitations")
+        .select("id, email, accepted_at, expires_at")
+        .eq("token", input.token)
+        .single();
+
+      if (error || !invite) throw new TRPCError({ code: "NOT_FOUND", message: "Invalid invite link" });
+      if (invite.accepted_at) throw new TRPCError({ code: "BAD_REQUEST", message: "This invite has already been used" });
+      if (new Date(invite.expires_at) < new Date()) throw new TRPCError({ code: "BAD_REQUEST", message: "This invite has expired" });
+      if (invite.email !== input.email) throw new TRPCError({ code: "FORBIDDEN", message: "Email does not match invite" });
+
+      const { data: newUser, error: createError } = await supabaseServer.auth.admin.createUser({
+        email: input.email,
+        password: input.password,
+        user_metadata: { full_name: input.full_name ?? null },
+        email_confirm: true,
+      });
+
+      if (createError) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: createError.message });
+      return { userId: newUser.user.id };
     }),
 
   validateToken: publicProcedure

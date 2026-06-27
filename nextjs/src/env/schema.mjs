@@ -49,6 +49,8 @@ export const clientSchema = z.object({
   // Supabase
   NEXT_PUBLIC_SUPABASE_URL: z.string(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string(),
+  // App
+  NEXT_PUBLIC_APP_URL: z.string().url(),
 });
 
 /**
@@ -61,4 +63,6 @@ export const clientEnv = {
   // Supabase
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  // App
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 };

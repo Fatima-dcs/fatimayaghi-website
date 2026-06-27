@@ -1,14 +1,6 @@
 import Image from "next/image";
 import { useTranslation } from "@/lib/i18n";
-
-const eyebrow: React.CSSProperties = {
-  fontFamily: "'Figtree', sans-serif",
-  fontWeight: 500,
-  fontSize: 12,
-  letterSpacing: "0.18em",
-  textTransform: "uppercase",
-  color: "var(--sand-accent)",
-};
+import { eyebrowStyle } from "./styles";
 
 export function Hero() {
   const { t } = useTranslation();
@@ -16,7 +8,7 @@ export function Hero() {
   return (
     <section className="mx-auto grid max-w-6xl items-center gap-14 px-6 pb-24 pt-16 md:grid-cols-2 md:pt-24">
       <div>
-        <div style={eyebrow}>{t.hero.badge}</div>
+        <div style={eyebrowStyle}>{t.hero.badge}</div>
         <h1
           className="mt-4 text-5xl font-medium leading-[1.05] font-heading md:text-6xl"
           style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}
@@ -72,7 +64,7 @@ export function Hero() {
               className="rounded-2xl px-5 py-4 backdrop-blur-sm"
               style={{ background: "rgba(250,248,245,0.9)", color: "var(--sand-ink)" }}
             >
-              <div style={eyebrow}>{t.nav.home === "Home" ? "This week" : "هذا الأسبوع"}</div>
+              <div style={eyebrowStyle}>{t.nav.home === "Home" ? "This week" : "هذا الأسبوع"}</div>
               <div className="mt-1 text-sm font-medium">
                 {t.nav.home === "Home" ? "Discovery slots open" : "أماكن متاحة للاستكشاف"}
               </div>

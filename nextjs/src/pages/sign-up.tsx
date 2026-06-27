@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { appConfig } from "@/config/app";
 import Link from "next/link";
+import { api } from "@/utils/api";
 
 export default function Page() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export default function Page() {
   const prefillName = router.query.name as string | undefined;
 
   const hasValidInvite = !!inviteToken;
+
+  const register = api.clients.registerWithInvite.useMutation();
 
   const [email, setEmail] = useState(prefillEmail ?? "");
   const [fullName, setFullName] = useState(prefillName ?? "");
@@ -66,24 +69,27 @@ export default function Page() {
     e.preventDefault();
     setError(null);
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName || undefined,
-          invite_token: inviteToken ?? undefined,
-        },
-      },
-    });
+    if (!inviteToken) {
+      setError("A valid invite link is required to create an account.");
+      return;
+    }
 
-    if (error) {
-      setError(error.message);
-    } else if (data.user) {
+    try {
+      await register.mutateAsync({
+        token: inviteToken,
+        email,
+        password,
+        full_name: fullName || undefined,
+      });
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
       toast({ title: "Welcome!", description: "Your account has been created." });
       router.push("/dashboard");
-    } else {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong. Please try again.");
     }
   }
 
@@ -160,10 +166,11 @@ export default function Page() {
 
           <button
             type="submit"
-            className="w-full rounded-full py-3 text-sm font-medium transition hover:-translate-y-0.5"
+            disabled={register.isPending}
+            className="w-full rounded-full py-3 text-sm font-medium transition hover:-translate-y-0.5 disabled:opacity-60"
             style={{ background: "var(--sand-accent)", color: "var(--sand-bg)" }}
           >
-            Create account
+            {register.isPending ? "Creating account…" : "Create account"}
           </button>
         </form>
 

@@ -1,13 +1,5 @@
 import { useTranslation } from "@/lib/i18n";
-
-const eyebrow: React.CSSProperties = {
-  fontFamily: "'Figtree', sans-serif",
-  fontWeight: 500,
-  fontSize: 12,
-  letterSpacing: "0.18em",
-  textTransform: "uppercase",
-  color: "var(--sand-accent)",
-};
+import { eyebrowStyle } from "./styles";
 
 export function Testimonials() {
   const { t } = useTranslation();
@@ -15,7 +7,7 @@ export function Testimonials() {
   return (
     <section style={{ background: "var(--sand-surface)" }}>
       <div className="mx-auto max-w-5xl px-6 py-24">
-        <div style={eyebrow} className="text-center mb-3">
+        <div style={eyebrowStyle} className="text-center mb-3">
           {t.testimonials.eyebrow}
         </div>
         <h2

@@ -230,3 +230,7 @@ A reusable setup guide lives at `SETUP_GUIDE.md` in the project root. **Keep it 
 Whenever a new important step is introduced — such as a new third-party integration (e.g. Calendly, Stripe, Cloudflare), a new environment variable, a new manual DB step, a new deployment step, or a known gotcha/fix — add it to the relevant section of `SETUP_GUIDE.md` so it can be reproduced from scratch for future clients.
 
 Remember: This is a production-ready template focused on security, type safety, and maintainability.
+
+## Claude Account
+- The only authorized Claude account for this project is **fatima.ali.yaghi.1987@gmail.com**
+- If at any point the active account appears to be an enterprise or any other account, flag it immediately before continuing any work

@@ -10,7 +10,7 @@ export const appConfig = {
   },
 
   auth: {
-    enableSignUp: true,
+    enableSignUp: false,
     enablePasswordReset: true,
   },
 

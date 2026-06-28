@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { appConfig } from "@/config/app";
 import Link from "next/link";
+import { api } from "@/utils/api";
 
 export default function Page() {
   const router = useRouter();
@@ -12,45 +13,53 @@ export default function Page() {
   const { user, loading: userLoading } = useUser();
   const { toast } = useToast();
 
-  const [email, setEmail] = useState("");
+  const inviteToken = router.query.invite as string | undefined;
+  const prefillEmail = router.query.email as string | undefined;
+  const prefillName = router.query.name as string | undefined;
+
+  const hasValidInvite = !!inviteToken;
+
+  const register = api.clients.registerWithInvite.useMutation();
+
+  const [email, setEmail] = useState(prefillEmail ?? "");
+  const [fullName, setFullName] = useState(prefillName ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // If user is already signed in, show message and redirect
+  // Sync prefills once query params are available
+  useEffect(() => {
+    if (prefillEmail) setEmail(prefillEmail);
+    if (prefillName) setFullName(prefillName);
+  }, [prefillEmail, prefillName]);
+
+  // Redirect already-signed-in users
   useEffect(() => {
     if (user && !userLoading) {
-      const returnTo = router.query.returnTo as string | undefined;
-      if (returnTo && returnTo.startsWith('/')) {
-        router.push(decodeURIComponent(returnTo));
-      } else {
-        toast({
-          title: "Already signed in",
-          description: "You're already signed in!",
-        });
-      }
+      router.push("/dashboard");
     }
-  }, [user, userLoading, router, toast]);
+  }, [user, userLoading, router]);
 
-  // Check if sign-up is enabled
-  if (!appConfig.auth.enableSignUp) {
+  // Block public sign-up unless coming from a valid invite link
+  if (!appConfig.auth.enableSignUp && !hasValidInvite) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 shadow-md">
-          <div className="flex flex-col items-center space-y-6">
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Sign Up Disabled
-            </h2>
-            <p className="text-center text-gray-600">
-              Account creation is currently disabled. Please contact an
-              administrator.
-            </p>
-            <button
-              onClick={() => router.push("/sign-in")}
-              className="group relative flex w-full justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-            >
-              Go to Sign In
-            </button>
-          </div>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--sand-bg)" }}>
+        <div
+          className="w-full max-w-sm rounded-3xl p-10 text-center space-y-4"
+          style={{ background: "var(--sand-surface)" }}
+        >
+          <h2 className="text-2xl font-medium font-heading" style={{ color: "var(--sand-ink)" }}>
+            Registration is by invite only
+          </h2>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--sand-ink-soft)" }}>
+            Ask your coach for an invite link to create your account.
+          </p>
+          <button
+            onClick={() => router.push("/sign-in")}
+            className="w-full rounded-full py-3 text-sm font-medium transition hover:-translate-y-0.5"
+            style={{ background: "var(--sand-accent)", color: "var(--sand-bg)" }}
+          >
+            Go to sign in
+          </button>
         </div>
       </div>
     );
@@ -58,107 +67,119 @@ export default function Page() {
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    setError(null);
 
-    if (error) {
-      setError(error.message);
-    } else if (data.user) {
-      toast({
-        title: "Success",
-        description: "Signed up successfully!",
+    if (!inviteToken) {
+      setError("A valid invite link is required to create an account.");
+      return;
+    }
+
+    try {
+      await register.mutateAsync({
+        token: inviteToken,
+        email,
+        password,
+        full_name: fullName || undefined,
       });
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+      toast({ title: "Welcome!", description: "Your account has been created." });
       router.push("/dashboard");
-    } else {
-      setError("No data returned from sign up");
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong. Please try again.");
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 shadow-md">
-        {user && !userLoading ? (
-          <div className="flex flex-col items-center space-y-6">
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              You're already signed in
-            </h2>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="group relative flex w-full justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-            >
-              Go to Dashboard
-            </button>
+    <div className="flex min-h-screen items-center justify-center px-6" style={{ background: "var(--sand-bg)" }}>
+      <div
+        className="w-full max-w-sm rounded-3xl p-10 space-y-6"
+        style={{ background: "var(--sand-surface)" }}
+      >
+        {hasValidInvite && (
+          <div
+            className="rounded-xl px-4 py-3 text-sm"
+            style={{ background: "var(--sand-bg)", color: "var(--sand-ink-soft)" }}
+          >
+            Creating your account for <span className="font-medium" style={{ color: "var(--sand-ink)" }}>{email}</span>
           </div>
-        ) : (
-          <>
-            <div>
-              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                Sign Up
-              </h2>
-            </div>
-            <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
-              <div className="-space-y-px rounded-md shadow-sm">
-                <div>
-                  <label htmlFor="email" className="sr-only">
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="relative block w-full rounded-t-md border-0 px-4 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                    placeholder="Email address"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="sr-only">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="relative block w-full rounded-b-md border-0 px-4 py-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                    placeholder="Password"
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <div className="rounded-md bg-red-50 p-4">
-                  <div className="flex">
-                    <div className="text-sm text-red-700">{error}</div>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <button
-                  type="submit"
-                  className="group relative flex w-full justify-center rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-                >
-                  Sign up
-                </button>
-              </div>
-              <div className="text-center">
-                <Link
-                  href="/sign-in"
-                  className="text-sm text-emerald-600 hover:text-emerald-500"
-                >
-                  Already have an account? Sign in
-                </Link>
-              </div>
-            </form>
-          </>
         )}
+
+        <h2 className="text-2xl font-medium font-heading" style={{ color: "var(--sand-ink)", letterSpacing: "-0.02em" }}>
+          Create account
+        </h2>
+
+        <form className="space-y-4" onSubmit={handleSignUp}>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--sand-ink-soft)" }}>
+              Full name
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your name"
+              className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2"
+              style={{ borderColor: "var(--sand-muted)", color: "var(--sand-ink)", background: "var(--sand-bg)" }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--sand-ink-soft)" }}>
+              Email address
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              readOnly={hasValidInvite}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2"
+              style={{
+                borderColor: "var(--sand-muted)",
+                color: "var(--sand-ink)",
+                background: hasValidInvite ? "var(--sand-surface)" : "var(--sand-bg)",
+              }}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--sand-ink-soft)" }}>
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Choose a password"
+              className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2"
+              style={{ borderColor: "var(--sand-muted)", color: "var(--sand-ink)", background: "var(--sand-bg)" }}
+            />
+          </div>
+
+          {error && (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={register.isPending}
+            className="w-full rounded-full py-3 text-sm font-medium transition hover:-translate-y-0.5 disabled:opacity-60"
+            style={{ background: "var(--sand-accent)", color: "var(--sand-bg)" }}
+          >
+            {register.isPending ? "Creating account…" : "Create account"}
+          </button>
+        </form>
+
+        <p className="text-center text-xs" style={{ color: "var(--sand-ink-soft)" }}>
+          Already have an account?{" "}
+          <Link href="/sign-in" className="underline hover:opacity-70" style={{ color: "var(--sand-accent)" }}>
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );

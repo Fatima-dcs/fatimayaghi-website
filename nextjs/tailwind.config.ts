@@ -3,7 +3,12 @@ import { type Config } from "tailwindcss";
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    // ... existing theme config
+    extend: {
+      fontFamily: {
+        heading: ["Outfit", "system-ui", "sans-serif"],
+        body: ["Figtree", "system-ui", "sans-serif"],
+      },
+    },
   },
   plugins: [
     // ... other plugins
